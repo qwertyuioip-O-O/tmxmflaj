@@ -68,7 +68,7 @@
       splitter:{r:16,hp:82*hpScale,speed:58*speedScale,color:'#64f58d',damage:12*damageScale,xp:3,split:true},
       elite:{r:25,hp:(260+state.level*40)*hpScale,speed:68*speedScale,color:'#ffd84d',damage:20*damageScale,xp:10},
       boss:{r:42,hp:(1100+state.stage*450)*hpScale,speed:44*speedScale,color:stage.color,damage:26*damageScale,xp:35,boss:true},
-      raidBoss:{r:74,hp:50000*Math.pow(1.8,raidTier-1),speed:32,color:raidProfile.color,damage:42+raidTier*8,xp:250*raidTier,boss:true,raid:true,raidName:raidProfile.name,mechanic:raidProfile.mechanic,hint:raidProfile.hint,shootRate:2.2,summonClock:5}
+      raidBoss:{r:74,hp:750000*Math.pow(1.8,raidTier-1),speed:32,color:raidProfile.color,damage:42+raidTier*8,xp:250*raidTier,boss:true,raid:true,raidName:raidProfile.name,mechanic:raidProfile.mechanic,hint:raidProfile.hint,shootRate:2.2,summonClock:5}
     };
     const stats=table[kind]||table.normal;
     state.enemies.push({x,y,kind,maxHp:stats.hp,shootClock:rand(.5,2),...stats});
