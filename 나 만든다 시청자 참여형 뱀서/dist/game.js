@@ -15,7 +15,7 @@
   const names = ['하늘다람쥐','김치전사','라면국물','새벽두시','무빙장인','돌멩이','고양이발'];
   const keys = new Set();
   const connectionStatus = document.querySelector('#connectionStatus');
-  let state, last = 0, raf, spawnClock = 0, shotClock = 0, chatClock = 0;
+  let state, last = 0, raf, spawnClock = 0, shotClock = 0;
 
   function freshState() {
     return { running:false, paused:false, over:false, time:0, kills:0, level:1, stage:1, xp:0, need:12, chaos:0, shield:0, slow:0, blackout:0, jam:0, confuse:0, voteCounts:[0,0,0], voters:new Set(),
@@ -90,6 +90,13 @@
     state.chaos=Math.min(100,state.chaos);updateUI();
   }
   document.querySelectorAll('[data-command]').forEach(b=>b.onclick=()=>command(b.dataset.command));
+  const broadcastTestPanel = document.querySelector('#broadcastTestPanel');
+  addEventListener('keydown', event=>{
+    if(event.key!=='F10')return;
+    event.preventDefault();
+    const hidden=broadcastTestPanel.classList.toggle('is-hidden');
+    broadcastTestPanel.setAttribute('aria-hidden',String(hidden));
+  });
 
   function setConnection(status) {
     connectionStatus.className = status.connected ? 'connected' : status.error ? 'error' : '';
@@ -192,7 +199,6 @@
     state.gems.forEach(g=>{const d=dist(g,p);if(d<(p.magnet||70)){const a=Math.atan2(p.y-g.y,p.x-g.x);g.x+=Math.cos(a)*320*dt;g.y+=Math.sin(a)*320*dt}if(d<p.r+g.r+3){g.dead=true;state.xp+=g.value}});
     state.particles.forEach(q=>{q.x+=q.vx*dt;q.y+=q.vy*dt;q.life-=dt});state.effects.forEach(e=>e.life-=dt);state.bullets=state.bullets.filter(b=>!b.dead&&b.life>0);state.enemyBullets=state.enemyBullets.filter(b=>!b.dead&&b.life>0);state.enemies=state.enemies.filter(e=>!e.dead);state.gems=state.gems.filter(g=>!g.dead);state.particles=state.particles.filter(q=>q.life>0);state.effects=state.effects.filter(e=>e.life>0);state.hazards=state.hazards.filter(m=>!m.dead&&m.life>0);
     if(state.xp>=state.need){state.xp-=state.need;state.level++;state.need=Math.round(state.need*1.3);showUpgrade()}
-    chatClock-=dt;if(chatClock<=0){const samples=['와 무빙 뭐야','살려야 하나?','보스 가자','경험치 먹어!','아슬아슬하다','ㅋㅋㅋㅋㅋㅋ'];addChat(samples[Math.floor(Math.random()*samples.length)],Math.random()<.3?'bad':'good');chatClock=rand(3,6)}
     if(p.hp<=0){p.hp=0;state.over=true;state.running=false;ui.final.textContent=`${Math.floor(state.time)}초 생존 · ${state.kills}마리 처치 · 레벨 ${state.level}`;ui.gameOver.classList.remove('hidden')}
     updateUI();
   }
