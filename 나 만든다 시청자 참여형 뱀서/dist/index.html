@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#090b12" />
+  <meta name="description" content="시청자 채팅이 전장을 바꾸는 서바이버라이크 웹 게임 프로토타입" />
+  <title>CHAT//SURVIVOR</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">C//S</span><span>CHAT SURVIVOR</span></div>
+      <div class="live"><i></i> MOCK CHAT ONLINE</div>
+    </header>
+
+    <section class="game-column">
+      <div class="game-frame" id="gameFrame">
+        <div class="frame-corner tl"></div><div class="frame-corner tr"></div>
+        <div class="frame-corner bl"></div><div class="frame-corner br"></div>
+        <canvas id="game" aria-label="채팅 서바이버 게임 화면"></canvas>
+        <div class="scanlines"></div>
+        <div class="stage-banner" id="stageBanner"><small>STAGE 1</small><b>격리 구역</b></div>
+        <div class="awaken-banner" id="awakenBanner"><small>WEAPON AWAKENED</small><b>각성 무기</b></div>
+        <div class="hud">
+          <div class="stat"><small>RUN TIME</small><b id="timer">00:00</b></div>
+          <div class="stat center"><small>ELIMINATED</small><b id="kills">0</b></div>
+          <div class="stat center"><small>STAGE</small><b id="stage">1</b></div>
+          <div class="stat right"><small>LEVEL</small><b id="level">1</b></div>
+        </div>
+        <div class="weapon-rack" id="weaponRack"></div>
+        <canvas class="minimap" id="minimap" width="150" height="150" aria-label="전체 맵 미니맵"></canvas>
+        <div class="bars">
+          <div class="bar-label"><b>HP</b><span id="hpText">100 / 100</span></div>
+          <div class="hp"><span id="hpBar"></span></div>
+          <div class="bar-label xp-label"><b>SYNC</b><span>LEVEL PROGRESS</span></div>
+          <div class="xp"><span id="xpBar"></span></div>
+        </div>
+        <div class="boss-warning" id="bossWarning">⚠ CHAT BOSS INCOMING</div>
+        <div class="raid-boss-hud" id="raidBossHud"><small id="raidBossPhase">PHASE 1</small><b id="raidBossName">심연의 군주</b><div><i id="raidBossBar"></i></div></div>
+        <div class="overlay" id="startOverlay">
+          <div class="overlay-card">
+            <p class="eyebrow">VIEWERS CONTROL THE CHAOS</p>
+            <h1>채팅이 곧<br><span>재난이다.</span></h1>
+            <p>WASD 또는 방향키로 이동하세요.<br>공격은 가장 가까운 적을 자동으로 조준합니다.</p>
+            <button id="startBtn">게임 시작 <span>ENTER</span></button>
+          </div>
+        </div>
+        <div class="overlay hidden" id="levelOverlay">
+          <div class="level-card">
+            <p class="eyebrow">LEVEL UP · CHAT VOTE</p>
+            <h2>강화 투표 <span id="voteTimer">10</span></h2>
+            <p class="vote-guide">채팅에 <b>!1</b> · <b>!2</b> · <b>!3</b>을 입력하세요</p>
+            <div class="upgrade-grid" id="upgradeGrid"></div>
+          </div>
+        </div>
+        <div class="overlay hidden" id="gameOverOverlay">
+          <div class="overlay-card compact">
+            <p class="eyebrow">RUN TERMINATED</p>
+            <h2>버티지 못했다.</h2>
+            <p id="finalScore"></p>
+            <button id="restartBtn">다시 시작 <span>R</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="mobile-controls" aria-label="모바일 이동 컨트롤">
+        <button data-key="ArrowUp">▲</button>
+        <button data-key="ArrowLeft">◀</button>
+        <button data-key="ArrowDown">▼</button>
+        <button data-key="ArrowRight">▶</button>
+      </div>
+    </section>
+
+    <aside class="chat-panel">
+      <div class="panel-head">
+        <div><span>YOUTUBE // LIVE FEED</span><h2>시청자 개입</h2></div>
+        <span class="viewer-count"><i></i>1,247</span>
+      </div>
+      <form class="youtube-connect" id="youtubeConnect">
+        <label for="youtubeUrl">라이브 방송 연결</label>
+        <div><input id="youtubeUrl" name="video" placeholder="YouTube 라이브 URL 또는 영상 ID" autocomplete="off" /><button type="submit">연결</button></div>
+        <p id="connectionStatus">서버 상태 확인 중…</p>
+      </form>
+      <div class="event-meter">
+        <div><span>CHAOS LIMIT</span><b id="chaosText">0%</b></div>
+        <div class="meter"><span id="chaosBar"></span></div>
+      </div>
+      <div class="chat-log" id="chatLog" aria-live="polite"></div>
+      <div class="command-pad">
+        <p>방송 테스트 패널 <span>버튼으로 채팅을 재현하세요</span></p>
+        <div class="commands">
+          <button data-command="heal"><b>구급팩</b><small>!회복</small></button>
+          <button data-command="supply"><b>보급품</b><small>!보급</small></button>
+          <button data-command="shield"><b>보호막</b><small>!실드</small></button>
+          <button data-command="horde" class="danger"><b>러시</b><small>!러시</small></button>
+          <button data-command="elite" class="danger"><b>정예</b><small>!정예</small></button>
+          <button data-command="boss" class="danger"><b>보스</b><small>!보스</small></button>
+          <button data-command="blackout" class="danger"><b>암전</b><small>!암전</small></button>
+          <button data-command="slow" class="danger"><b>족쇄</b><small>!둔화</small></button>
+          <button data-command="jam" class="danger"><b>무기 봉인</b><small>!봉인</small></button>
+          <button data-command="teleport" class="danger"><b>강제 이동</b><small>!텔포</small></button>
+          <button data-command="minefield" class="danger"><b>지뢰밭</b><small>!지뢰</small></button>
+          <button data-command="confuse" class="danger"><b>조작 반전</b><small>!혼란</small></button>
+        </div>
+      </div>
+      <div class="legend">
+        <span><i class="good"></i>도움</span><span><i class="bad"></i>방해</span><span><i class="vote"></i>투표</span>
+      </div>
+    </aside>
+  </main>
+  <script src="./game.js"></script>
+</body>
+</html>
