@@ -36,6 +36,9 @@
     {name:'공허 관문',color:'#9e6cff',pool:['tank','shooter','splitter']},
     {name:'무한 침식',color:'#ffffff',pool:['runner','tank','shooter','splitter']}
   ];
+  const regionForStage=stage=>stages[Math.floor((stage-1)/15)%stages.length];
+  const stageDuration=stage=>Math.min(45,15+(stage-1)*(30/69));
+  function stageAtTime(time){let stage=1;while(time>=stageDuration(stage)){time-=stageDuration(stage);stage++}return stage}
   const landmarks=Array.from({length:70},(_,i)=>({x:180+(i*811)%5640,y:180+(i*1367)%5640,r:18+(i*17)%58}));
   const raidProfiles=[
     {name:'심연의 군주',mechanic:'barrage',color:'#ff176b',hint:'방사형 탄막'},
@@ -55,7 +58,7 @@
     const {w,h}=size(),p=state.player,side=Math.floor(Math.random()*4),margin=90;let x,y;
     if(side===0){x=p.x+rand(-w*.65,w*.65);y=p.y-h*.6-margin}else if(side===1){x=p.x+w*.6+margin;y=p.y+rand(-h*.65,h*.65)}else if(side===2){x=p.x+rand(-w*.65,w*.65);y=p.y+h*.6+margin}else{x=p.x-w*.6-margin;y=p.y+rand(-h*.65,h*.65)}
     x=Math.max(20,Math.min(WORLD-20,x));y=Math.max(20,Math.min(WORLD-20,y));
-    const stage=stages[Math.min(state.stage-1,stages.length-1)],hpScale=Math.pow(1.14,state.stage-1)*(1+state.time/600),damageScale=Math.pow(1.11,state.stage-1),speedScale=Math.min(1.55,Math.pow(1.04,state.stage-1));
+    const stage=regionForStage(state.stage),hpScale=Math.pow(1.14,state.stage-1)*(1+state.time/600),damageScale=Math.pow(1.11,state.stage-1),speedScale=Math.min(1.55,Math.pow(1.04,state.stage-1));
     if(!kind)kind=stage.pool[Math.floor(Math.random()*stage.pool.length)];
     const raidTier=Math.max(1,Math.floor(state.stage/15)),raidProfile=raidProfiles[(raidTier-1)%raidProfiles.length],table={
       normal:{r:12,hp:28*hpScale,speed:65*speedScale,color:'#ff536f',damage:10*damageScale,xp:1},
@@ -174,7 +177,7 @@
   }
   function hurt(e,amount){if(e.dead)return;e.hp-=amount;if(e.hp<=0)defeat(e)}
   function enterStage(number){
-    state.stage=number;const raid=number%15===0,info=stages[Math.min(number-1,stages.length-1)],profile=raidProfiles[(Math.floor(number/15)-1)%raidProfiles.length];ui.stageBanner.querySelector('small').textContent=raid?`RAID STAGE ${number}`:`STAGE ${number}`;ui.stageBanner.querySelector('b').textContent=raid?`${profile.name} 강림`:info.name;ui.stageBanner.style.borderColor=raid?profile.color:info.color;ui.stageBanner.classList.remove('show');void ui.stageBanner.offsetWidth;ui.stageBanner.classList.add('show');if(raid){const removed=state.enemies.filter(e=>!e.raid).length;state.enemies=[];state.enemyBullets=[];spawnEnemy('raidBoss');ui.raidName.textContent=profile.name;announce(`레이드 개시! 잡몹 ${removed}마리 소멸 · ${profile.name} (${profile.hint})`);ui.warning.textContent=`⚠ RAID BOSS // ${profile.name}`}else{spawnEnemy('boss');announce(`STAGE ${number} · ${info.name} 진입. 보스 출현!`);ui.warning.textContent='⚠ STAGE BOSS INCOMING'}ui.warning.classList.add('show');setTimeout(()=>ui.warning.classList.remove('show'),2600)
+    state.stage=number;const raid=number%15===0,info=regionForStage(number),profile=raidProfiles[(Math.floor(number/15)-1)%raidProfiles.length];ui.stageBanner.querySelector('small').textContent=raid?`RAID STAGE ${number}`:`STAGE ${number}`;ui.stageBanner.querySelector('b').textContent=raid?`${profile.name} 강림`:info.name;ui.stageBanner.style.borderColor=raid?profile.color:info.color;ui.stageBanner.classList.remove('show');void ui.stageBanner.offsetWidth;ui.stageBanner.classList.add('show');if(raid){const removed=state.enemies.filter(e=>!e.raid).length;state.enemies=[];state.enemyBullets=[];spawnEnemy('raidBoss');ui.raidName.textContent=profile.name;announce(`레이드 개시! 잡몹 ${removed}마리 소멸 · ${profile.name} (${profile.hint})`);ui.warning.textContent=`⚠ RAID BOSS // ${profile.name}`}else{spawnEnemy('boss');announce(`STAGE ${number} · ${info.name} 진입. 보스 출현!`);ui.warning.textContent='⚠ STAGE BOSS INCOMING'}ui.warning.classList.add('show');setTimeout(()=>ui.warning.classList.remove('show'),2600)
   }
   function fireWeapons(dt){
     const p=state.player;
@@ -196,7 +199,7 @@
   }
 
   function update(dt){
-    const p=state.player,{w,h}=size(); state.time+=dt;state.shield=Math.max(0,state.shield-dt);state.slow=Math.max(0,state.slow-dt);state.blackout=Math.max(0,state.blackout-dt);state.jam=Math.max(0,state.jam-dt);state.confuse=Math.max(0,state.confuse-dt);state.chaos=Math.max(0,state.chaos-dt*.3);const stageNow=Math.floor(state.time/45)+1;if(stageNow>state.stage)enterStage(stageNow);
+    const p=state.player,{w,h}=size(); state.time+=dt;state.shield=Math.max(0,state.shield-dt);state.slow=Math.max(0,state.slow-dt);state.blackout=Math.max(0,state.blackout-dt);state.jam=Math.max(0,state.jam-dt);state.confuse=Math.max(0,state.confuse-dt);state.chaos=Math.max(0,state.chaos-dt*.3);const stageNow=stageAtTime(state.time);if(stageNow>state.stage)enterStage(stageNow);
     let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(state.confuse){dx=-dx;dy=-dy}let l=Math.hypot(dx,dy)||1,moveSpeed=p.speed*(state.slow?.48:1);p.x=Math.max(p.r,Math.min(WORLD-p.r,p.x+dx/l*moveSpeed*dt));p.y=Math.max(p.r,Math.min(WORLD-p.r,p.y+dy/l*moveSpeed*dt));
     spawnClock-=dt;const raidAlive=state.enemies.some(e=>e.raid),bossAlive=state.enemies.some(e=>e.boss&&!e.raid),interval=Math.max(.22,.62-state.stage*.025-state.time/1800);if(!raidAlive&&spawnClock<=0&&state.enemies.length<320){const baseBatch=Math.min(7,2+Math.ceil(state.stage/2)+Math.floor(state.time/300)),batch=bossAlive?Math.ceil(baseBatch*.5):baseBatch;for(let i=0;i<batch;i++)spawnEnemy();spawnClock=interval}
     shotClock-=dt;const target=state.enemies.reduce((best,e)=>!best||dist(p,e)<dist(p,best)?e:best,null);if(!state.jam&&target&&shotClock<=0){const awake=state.awakened.rifle,base=Math.atan2(target.y-p.y,target.x-p.x),count=p.multishot+(awake?2:0);for(let i=0;i<count;i++){const a=base+(i-(count-1)/2)*(awake?.11:.16);state.bullets.push({x:p.x,y:p.y,vx:Math.cos(a)*p.bulletSpeed,vy:Math.sin(a)*p.bulletSpeed,r:(p.bulletSize||4)+(awake?2:0),life:1.8,awakened:awake,damage:awake?p.damage*1.8*weaponPower('rifle'):null,pierce:(p.pierce||0)+(awake?3:0)})}shotClock=p.fireRate*(awake?.55:1)*cooldownFactor('rifle')}
